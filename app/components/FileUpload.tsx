@@ -39,7 +39,6 @@ const FileUpload: React.FC<FileUploadProps> = ({
             dataSource.add(geoJson);
             mapRef.current?.sources.add(dataSource);
 
-            // Add different types of layers for different geometry types
             const pointLayer = new atlas.layer.BubbleLayer(
               dataSource,
               undefined,
@@ -60,10 +59,8 @@ const FileUpload: React.FC<FileUploadProps> = ({
 
             mapRef.current?.layers.add([pointLayer, lineLayer, polygonLayer]);
 
-            // Store data source and file name for display and removal
             setDataSources(dataSource, file.name);
 
-            // Extract properties for PropertySelector
             const propertiesSet = new Set<string>();
             dataSource.getShapes().forEach((shape) => {
               const properties = shape.getProperties();
@@ -73,16 +70,14 @@ const FileUpload: React.FC<FileUploadProps> = ({
             });
             setProperties(Array.from(propertiesSet));
 
-            // Set the camera to the bounds of the uploaded data
             const bbox = atlas.data.BoundingBox.fromData(geoJson);
             mapRef.current?.setCamera({
               bounds: bbox,
               padding: 40,
             });
-            // Notify parent component about successful file upload
-            onFileUploaded(); // Added this line
 
-            // Close the file upload overlay
+            onFileUploaded();
+
             setIsVisible(false);
             onClose();
           } catch (error) {

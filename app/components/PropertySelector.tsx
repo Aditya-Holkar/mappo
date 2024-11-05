@@ -2,13 +2,13 @@
 
 import React, { useEffect, useRef } from "react";
 import * as atlas from "azure-maps-control";
-import { Dropdown } from "carbon-components-react"; // Import the Carbon Dropdown
+import { Dropdown } from "carbon-components-react";
 
 interface PropertySelectorProps {
   properties: string[];
   selectedProperty: string;
   setSelectedProperty: React.Dispatch<React.SetStateAction<string>>;
-  setProperties: React.Dispatch<React.SetStateAction<string[]>>; // Added setProperties to manage all properties
+  setProperties: React.Dispatch<React.SetStateAction<string[]>>;
   selectedPropertyValues: string[];
   setSelectedPropertyValues: React.Dispatch<React.SetStateAction<string[]>>;
   valueColorMap: { [key: string]: string };
@@ -23,7 +23,7 @@ const PropertySelector: React.FC<PropertySelectorProps> = ({
   properties,
   selectedProperty,
   setSelectedProperty,
-  setProperties, // Added setProperties
+  setProperties,
   selectedPropertyValues,
   setSelectedPropertyValues,
   valueColorMap,
@@ -31,7 +31,6 @@ const PropertySelector: React.FC<PropertySelectorProps> = ({
   dataSources,
   mapRef,
 }) => {
-  // Track the layers added for each data source
   const layerMapRef = useRef<{ [key: string]: atlas.layer.Layer[] }>({});
 
   useEffect(() => {
@@ -49,7 +48,6 @@ const PropertySelector: React.FC<PropertySelectorProps> = ({
     }
   }, [selectedProperty, dataSources, setSelectedPropertyValues]);
 
-  // Accumulate properties from all data sources and update the dropdown
   useEffect(() => {
     const propertiesSet = new Set<string>();
 
@@ -66,11 +64,11 @@ const PropertySelector: React.FC<PropertySelectorProps> = ({
 
     setProperties((prev) => {
       const newProperties = Array.from(propertiesSet);
-      // Only update state if new properties are different
+
       if (JSON.stringify(prev) !== JSON.stringify(newProperties)) {
         return newProperties;
       }
-      return prev; // Return the previous state to prevent unnecessary re-render
+      return prev;
     });
   }, [dataSources, setProperties]);
 
@@ -78,17 +76,14 @@ const PropertySelector: React.FC<PropertySelectorProps> = ({
     setValueColorMap((prev) => ({ ...prev, [value]: color }));
 
     if (mapRef.current) {
-      // Update the color property of each shape directly and refresh the layer
       dataSources.forEach((dataSource) => {
         dataSource.getShapes().forEach((shape) => {
           const shapeValue = shape.getProperties()[selectedProperty];
           if (shapeValue != null && shapeValue === value) {
-            // Update the color property
             shape.setProperties({ ...shape.getProperties(), color });
           }
         });
 
-        // To apply the updated properties, set the options for associated layers
         const dataSourceId = dataSource.getId();
         if (layerMapRef.current[dataSourceId]) {
           layerMapRef.current[dataSourceId].forEach((layer) => {
@@ -98,7 +93,6 @@ const PropertySelector: React.FC<PropertySelectorProps> = ({
           });
         }
 
-        // Create new layers with updated colors
         const bubbleLayer = new atlas.layer.BubbleLayer(dataSource, undefined, {
           filter: ["==", "$type", "Point"],
           color: ["get", "color"],
@@ -116,7 +110,6 @@ const PropertySelector: React.FC<PropertySelectorProps> = ({
           }
         );
 
-        // Add new layers to the map and track them
         if (mapRef.current) {
           mapRef.current.layers.add([bubbleLayer, lineLayer, polygonLayer]);
           layerMapRef.current[dataSourceId] = [
